@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MiRedSocial{% endblock %}</title>
+    {# Asegúrate que esta ruta a style.css sea correcta para tu estructura de archivos estáticos #} {# Si style.css está en red_social_app/static/red_social_app/css/style.css, sería: #} {#
+    <link rel="stylesheet" href="{% static 'red_social_app/css/style.css' %}"> #} {# Si está en un directorio static a nivel de proyecto: /static_project_folder/css/style.css #}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"> {# Asumiendo que tienes /static/css/style.css a nivel de proyecto o app #}
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+    <div class="page-container">
+        <header class="main-header">
+            <div class="header-content-wrapper">
+                <a href="{% url 'home_redsocial' %}" class="logo">
+                    <span class="material-icons logo-icon">hub</span> MiRedSocial
+                </a>
+                <nav class="main-navigation" id="main-navigation-menu">
+                    <ul>
+                        <li><a href="{% url 'home_redsocial' %}" class="nav-item" title="Inicio"><span class="material-icons">home</span><span class="nav-item-text">Inicio</span></a></li>
+                        {% if usuario_actual %} {#
+                        <--- CAMBIO AQUÍ #} <li><a href="#" class="nav-item" title="Notificaciones"><span class="material-icons">notifications</span><span class="nav-item-text">Notificaciones</span></a></li>
+                            <li><a href="#" class="nav-item" title="Mensajes"><span class="material-icons">chat</span><span class="nav-item-text">Mensajes</span></a></li>
+                            <li><a href="#" class="nav-item" title="Amigos"><span class="material-icons">people</span><span class="nav-item-text">Amigos</span></a></li>
+                            <li>
+                                <a href="#" class="nav-item profile-nav-item" title="Mi Perfil">
+                                {# Asumiendo que tu modelo Usuarios tiene 'foto_perfil' y 'nombre_usuario' #}
+                                <img src="{% if usuario_actual.foto_perfil %}{{ usuario_actual.foto_perfil.url }}{% else %}{% static 'red_social_app/images/default_profile.png' %}{% endif %}" alt="Mi perfil" class="nav-profile-pic">
+                                <span class="nav-item-text">{{ usuario_actual.nombre_usuario }}</span> {# <--- CAMBIO AQUÍ #}
+                            </a>
+                            </li>
+                            <li>
+                                {# Para logout, es mejor usar un formulario POST por seguridad #}
+                                <form action="{% url 'logout_usuario' %}" method="post" style="display: inline;" class="nav-item-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="nav-item btn btn-secondary-outline" title="Cerrar Sesión" style="background: none; border: none; padding: 0; cursor: pointer; color: inherit; font: inherit;">
+                                    <span class="material-icons">logout</span><span class="nav-item-text">Salir</span>
+                                </button>
+                                </form>
+                            </li>
+                            {% else %}
+                            <li><a href="{% url 'login_usuario' %}" class="nav-item btn btn-primary">Iniciar Sesión</a></li>
+                            <li><a href="{% url 'registro_usuario' %}" class="nav-item btn btn-secondary-outline">Registrarse</a></li>
+                            {% endif %}
+                    </ul>
+                </nav>
+                <button class="mobile-menu-trigger" aria-controls="main-navigation-menu" aria-expanded="false">
+                    <span class="material-icons">menu</span>
+                    <span class="sr-only">Abrir menú</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+                    {% endfor %}
+            </ul>
+            {% endif %} {% block content %}{% endblock %}
+        </main>
+
+        <footer class="main-footer">
+            <p>&copy; {% now "Y" %} MiRedSocial. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+
+    {# Asegúrate que esta ruta a main.js sea correcta #}
+    <script src="{% static 'js/main.js' %}"></script> {# Asumiendo /static/js/main.js #} {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>

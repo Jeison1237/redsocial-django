@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'red_social_app.apps.RedsocialAppConfig',
+    'red_social_app.apps.RedSocialAppConfig',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +63,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'red_social_app.context_processors.datos_usuario_actual',
             ],
         },
     },
@@ -77,10 +78,10 @@ WSGI_APPLICATION = 'red_social_main.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql', # Especifica el motor de PostgreSQL
-        'NAME': 'tu_nombre_de_base_de_datos_pg',  # El nombre de la base de datos que creaste en PostgreSQL
-        'USER': 'tu_usuario_pg',                  # Tu nombre de usuario de PostgreSQL
-        'PASSWORD': 'tu_contrasena_pg',            # Tu contraseña de PostgreSQL
-        'HOST': 'localhost',                      # O la IP/hostname de tu servidor PostgreSQL (si no es local)
+        'NAME': 'dd1jelrcgeq0vq',  # El nombre de la base de datos que creaste en PostgreSQL
+        'USER': 'ufplov9l0ijk6v',                  # Tu nombre de usuario de PostgreSQL
+        'PASSWORD': 'p50f29e321b035c43f0bd30992f6f04c74b8d5dac9bed9dabc3455078cecec943',            # Tu contraseña de PostgreSQL
+        'HOST': 'c7s7ncbk19n97r.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',                      # O la IP/hostname de tu servidor PostgreSQL (si no es local)
         'PORT': '5432',                           # El puerto por defecto de PostgreSQL (deja '' o '5432')
     }
 }
@@ -105,7 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'red_social_app.Usuarios'
+#AUTH_USER_MODEL = 'red_social_app.Usuarios'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

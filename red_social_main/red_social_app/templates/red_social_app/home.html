@@ -1,0 +1,92 @@
+{% extends "red_social_app/base.html" %} {% load static %} {% block title %}Inicio - MiRedSocial{% endblock %} {% block content %}
+<div class="home-layout">
+
+    <div class="main-column">
+        {% if user.is_authenticated %}
+        <section class="create-post-section card-style">
+            <div class="create-post-header">
+                <img src="{% if user.foto_perfil %}{{ user.foto_perfil.url }}{% else %}{% static 'red_social_app/images/default_profile.png' %}{% endif %}" alt="Tu perfil" class="profile-pic">
+                <h3>Crear Publicación</h3>
+            </div>
+            <form method="POST" action="#"> {# Reemplaza # con tu URL de crear publicación #} {% csrf_token %} {# Importante para la seguridad de formularios Django #}
+                <textarea name="contenido_texto" class="create-post-textarea" placeholder="¿Qué estás pensando, {{ user.username }}?"></textarea>
+                <div class="create-post-options">
+                    <label for="post-media-input" class="btn btn-secondary-outline btn-small">
+                        <span class="material-icons">add_photo_alternate</span> Adjuntar Foto/Video
+                    </label>
+                    <input type="file" name="url_media" id="post-media-input" style="display:none;"> {# Aquí podrías añadir un preview de la imagen/video con JS #}
+                    <button type="submit" class="btn btn-primary">Publicar</button>
+                </div>
+            </form>
+        </section>
+        {% endif %}
+
+        <section class="feed-section">
+            <h2>Feed de Actividad</h2>
+
+            {# Ejemplo de Publicación 1 (Texto) #}
+            <article class="post-item card-style">
+                <div class="post-item-header">
+                    <img src="{% static 'red_social_app/images/default_profile.png' %}" alt="Usuario Ejemplo" class="profile-pic">
+                    <div class="post-item-author">
+                        <strong>Usuario Ejemplo</strong>
+                        <small class="text-muted">Hace 10 minutos</small>
+                    </div>
+                </div>
+                <div class="post-item-content">
+                    <p>¡Hola a todos! Probando esta nueva red social. Se siente muy fluida y el diseño oscuro está genial. ¿Qué opinan ustedes?</p>
+                </div>
+                <div class="post-item-actions">
+                    <button class="action-btn"><span class="material-icons">thumb_up</span> Me Gusta (15)</button>
+                    <button class="action-btn"><span class="material-icons">chat_bubble_outline</span> Comentar (3)</button>
+                    <button class="action-btn"><span class="material-icons">share</span> Compartir</button>
+                </div>
+            </article>
+
+            {# Ejemplo de Publicación 2 (Con Imagen) #}
+            <article class="post-item card-style">
+                <div class="post-item-header">
+                    <img src="{% static 'red_social_app/images/default_profile.png' %}" alt="Otro Usuario" class="profile-pic">
+                    <div class="post-item-author">
+                        <strong>Otro Usuario</strong>
+                        <small class="text-muted">Hace 1 hora</small>
+                    </div>
+                </div>
+                <div class="post-item-content">
+                    <p>Disfrutando de un hermoso atardecer en la playa. ¡Momentos que valen oro!</p>
+                    <img src="{% static 'red_social_app/images/post_image_placeholder.jpg' %}" alt="Atardecer en la playa" class="post-image">
+                </div>
+                <div class="post-item-actions">
+                    <button class="action-btn"><span class="material-icons">thumb_up_off_alt</span> Me Gusta (52)</button>
+                    <button class="action-btn"><span class="material-icons">chat_bubble_outline</span> Comentar (8)</button>
+                    <button class="action-btn"><span class="material-icons">share</span> Compartir</button>
+                </div>
+            </article>
+
+            {% if not user.is_authenticated %}
+            <div class="guest-prompt card-style">
+                <p>Inicia sesión o regístrate para ver más actividad y participar en la conversación.</p>
+                <div class="guest-actions">
+                    <a href="{% url 'login_usuario' %}" class="btn btn-primary">Iniciar Sesión</a>
+                    <a href="{% url 'registro_usuario' %}" class="btn btn-secondary-outline">Registrarse</a>
+                </div>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+
+    {# Puedes añadir una columna lateral aquí si lo deseas en el futuro #}
+    <!--
+    <aside class="sidebar-column">
+        <div class="sidebar-widget card-style">
+            <h4>Amigos Sugeridos</h4>
+            <p>...</p>
+        </div>
+        <div class="sidebar-widget card-style">
+            <h4>Tendencias</h4>
+            <p>...</p>
+        </div>
+    </aside>
+    -->
+</div>
+{% endblock %}

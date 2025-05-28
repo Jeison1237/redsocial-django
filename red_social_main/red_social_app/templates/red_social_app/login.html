@@ -1,0 +1,53 @@
+{% extends "red_social_app/base.html" %} {% load static %} {% block title %}Iniciar Sesión - Mi Red Social{% endblock %} {% block content %}
+<div class="form-container">
+    <h2>Iniciar Sesión</h2>
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+            {% endfor %}
+    </ul>
+    {% endif %} {# Mostrar errores generales del formulario si existen #} {% if form.non_field_errors %}
+    <div class="messages">
+        {% for error in form.non_field_errors %}
+        <p class="error error-message">{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %} {% if form.errors and not form.non_field_errors%}
+    <div class="messages">
+        <p class="error">Por favor, corrige los errores a continuación.</p>
+    </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %} {# Campo oculto para 'next' para redirigir después del login si es necesario #} {# La vista login_view debe pasar 'next': request.GET.get('next', '') al contexto #} {% if next %}
+        <input type="hidden" name="next" value="{{ next }}"> {% endif %}
+
+        <div class="form-group">
+            {# Cambiado de form.username a form.correo #}
+            <label for="{{ form.correo.id_for_label }}">{{ form.correo.label }}:</label> {{ form.correo }} {% if form.correo.errors %}
+            <div class="error-message">
+                {% for error in form.correo.errors %}
+                <span>{{ error }}</span><br> {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {# Cambiado de form.password a form.contrasena #}
+            <label for="{{ form.contrasena.id_for_label }}">{{ form.contrasena.label }}:</label> {{ form.contrasena }} {% if form.contrasena.errors %}
+            <div class="error-message">
+                {% for error in form.contrasena.errors %}
+                <span>{{ error }}</span><br> {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <button type="submit">Iniciar Sesión</button>
+        </div>
+    </form>
+    <p>¿No tienes una cuenta? <a href="{% url 'registro_usuario' %}">Regístrate aquí</a>.</p>
+</div>
+{% endblock %}
