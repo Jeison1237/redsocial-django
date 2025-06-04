@@ -16,9 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic.base import RedirectView # Importa RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('redsocial/', include('red_social_app.urls')), # O el nombre de tu app
+    path('', RedirectView.as_view(url='/redsocial/', permanent=True)),
     
 ]
