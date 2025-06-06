@@ -8,7 +8,7 @@ class Usuarios(models.Model):
     contrasena = models.CharField(max_length=255, db_column='contraseña')  # ¡OJO! La columna real es 'contraseña'
     fecha_nacimiento = models.DateField(blank=True, null=True)
     ubicacion = models.CharField(max_length=255, blank=True, null=True)
-    foto_perfil = models.CharField(max_length=512, blank=True, null=True)
+    foto_perfil = models.ImageField(max_length=512, blank=True, null=True)
     fecha_registro = models.DateTimeField(blank=True, null=True)
     ultima_conexion = models.DateTimeField(blank=True, null=True)
 

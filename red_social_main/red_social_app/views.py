@@ -59,8 +59,8 @@ def login_view(request):
                 usuario = Usuarios.objects.get(correo=correo)
                 if check_password(contrasena_ingresada, usuario.contrasena):
                     request.session['usuario_id'] = usuario.pk # Guardar el ID del usuario en la sesión
-                    request.session['nombre_usuario'] = usuario.nombre_usuario # Opcional
-                    messages.info(request, f'¡Bienvenido de nuevo, {usuario.nombre_usuario}!')
+                    request.session['nombre_usuario'] = usuario.nombre # Opcional
+                    messages.info(request, f'¡Bienvenido de nuevo, {usuario.nombre}!')
                     
                     next_url = request.POST.get('next') or request.GET.get('next')
                     if next_url:
