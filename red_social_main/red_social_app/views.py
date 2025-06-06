@@ -3,8 +3,9 @@ from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password # Para verificar contraseñas hasheadas
 
-from .forms import RegistroUsuarioForm, LoginUsuarioForm # Nuestros formularios personalizados
-from .models import Usuarios # Nuestro modelo de usuario
+from .forms import RegistroUsuarioForm, LoginUsuarioForm, PublicacionForm # Nuestros formularios personalizados
+from .models import Usuarios , Publicaciones# Nuestro modelo de usuario
+
 
 # Vista para la página de inicio
 def home(request):
@@ -16,10 +17,13 @@ def home(request):
         except Usuarios.DoesNotExist:
             # El usuario_id en la sesión no es válido, limpiar sesión
             del request.session['usuario_id']
-            
+            messages.error(request, "Error de sesión. Por favor, inicia sesión de nuevo.")
+
+    lista_publicaciones = Publicaciones.objects.all() # Esto usa el 'ordering' definido en el modelo    
     context = {
         'mensaje_bienvenida': '¡Bienvenido a la plataforma social definitiva!',
-        'usuario_actual': usuario_actual, # Pasamos el usuario a la plantilla
+        'usuario_actual': usuario_actual,
+        'publicaciones': lista_publicaciones, # Pasar las publicaciones a la plantilla
     }
     return render(request, 'red_social_app/home.html', context)
 
@@ -84,7 +88,7 @@ def logout_view(request):
     if 'nombre_usuario' in request.session: # Limpiar también otra info guardada
         del request.session['nombre_usuario']
     messages.info(request, 'Has cerrado sesión exitosamente.')
-    return redirect('login')
+    return redirect('login_usuario') # Redirigir al login o a la página de inicio
 
 
 # --- Vistas de Publicaciones (Placeholders) ---
@@ -92,28 +96,34 @@ def crear_publicacion_view(request):
     usuario_id = request.session.get('usuario_id')
     if not usuario_id:
         messages.warning(request, 'Debes iniciar sesión para crear una publicación.')
-        return redirect('login') # Redirigir a login si no está autenticado
+        return redirect('login_usuario' + '?next=' + request.path)
     
     try:
         usuario_actual = Usuarios.objects.get(pk=usuario_id)
     except Usuarios.DoesNotExist:
         messages.error(request, "Error: Usuario no encontrado. Por favor, inicia sesión de nuevo.")
-        if 'usuario_id' in request.session: del request.session['usuario_id'] # Limpiar sesión corrupta
-        return redirect('login')
+        if 'usuario_id' in request.session:
+            del request.session['usuario_id']
+        return redirect('login_usuario')
 
-    # Lógica de ejemplo para el futuro:
-    # if request.method == 'POST':
-    #     form_publicacion = PublicacionForm(request.POST, request.FILES) # Necesitarás crear PublicacionForm
-    #     if form_publicacion.is_valid():
-    #         publicacion = form_publicacion.save(commit=False)
-    #         publicacion.usuarioid = usuario_actual # Asigna el usuario logueado como autor
-    #         publicacion.save()
-    #         messages.success(request, "Publicación creada exitosamente.")
-    #         return redirect('home_redsocial')
-    # else:
-    #     form_publicacion = PublicacionForm()
-    # return render(request, 'red_social_app/crear_publicacion.html', {'form': form_publicacion, 'usuario_actual': usuario_actual})
-    return render(request, 'red_social_app/crear_publicacion.html', {'page_title': 'Crear Nueva Publicación', 'usuario_actual': usuario_actual})
+    if request.method == 'POST':
+        form = PublicacionForm(request.POST, request.FILES)
+        if form.is_valid():
+            publicacion = form.save(commit=False)
+            publicacion.usuario = usuario_actual  # Relación correcta
+            publicacion.save(using='default')     # Explicitamente usando la base de datos por si tienes varias
+            messages.success(request, "Publicación creada exitosamente.")
+            return redirect('home_redsocial')
+        else:
+            messages.error(request, "Por favor corrige los errores del formulario.")
+    else:
+        form = PublicacionForm()
+
+    return render(request, 'red_social_app/crear_publicacion.html', {
+        'form': form,
+        'usuario_actual': usuario_actual,
+        'page_title': 'Crear Nueva Publicación'
+    })
 
 
 # (El resto de tus vistas placeholder pueden permanecer igual por ahora)

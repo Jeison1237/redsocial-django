@@ -1,5 +1,5 @@
 from django import forms
-from .models import Usuarios
+from .models import Usuarios, Publicaciones
 from django.contrib.auth.hashers import make_password
 
 class RegistroUsuarioForm(forms.ModelForm):
@@ -45,3 +45,22 @@ class RegistroUsuarioForm(forms.ModelForm):
 class LoginUsuarioForm(forms.Form):
     correo = forms.EmailField(label="Correo Electrónico")
     contrasena = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
+
+class PublicacionForm(forms.ModelForm):
+    class Meta:
+        model = Publicaciones
+        fields = ['contenido_texto', 'url_media', 'tipo_contenido']
+        widgets = {
+            'contenido_texto': forms.Textarea(attrs={
+                'class': 'create-post-textarea',
+                'placeholder': '¿Qué estás pensando?'
+            }),
+            'tipo_contenido': forms.TextInput(attrs={
+                'placeholder': 'Ej: IMAGEN, VIDEO, TEXTO (opcional)'
+            }),
+        }
+        labels = {
+            'contenido_texto': 'Contenido',
+            'url_media': 'Archivo adjunto',
+            'tipo_contenido': 'Tipo de contenido',
+        }
