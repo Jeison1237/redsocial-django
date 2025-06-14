@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-qf@ymt3n*33y25
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
-ALLOWED_HOSTS = ['your-app-name.herokuapp.com', '127.0.0.1', 'localhost'] # Replace 'your-app-name'
+ALLOWED_HOSTS = ['https://redsocial-4373c7dc6740.herokuapp.com/', '127.0.0.1', 'localhost'] # Replace 'your-app-name'
 
 
 # Application definition
