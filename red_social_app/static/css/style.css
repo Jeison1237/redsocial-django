@@ -1,0 +1,511 @@
+/* --- :root Variables --- */
+:root {
+    --bs-primary: #2d88ff; /* Un azul un poco más brillante para dark mode */
+    --bs-primary-rgb: 45, 136, 255;
+    --bs-secondary: #899097; /* Bootstrap secondary adaptado */
+    --bs-success: #40c057; /* Verde adaptado */
+    --bs-danger: #ff6b6b;  /* Rojo adaptado */
+    --bs-light: #393b3d;   /* Un gris oscuro para elementos 'light' en dark mode */
+    --bs-dark: #e4e6eb;    /* Texto claro para elementos 'dark' en dark mode */
+
+    /* Dark Theme Palette */
+    --bg-main: #18191a; /* Fondo principal muy oscuro */
+    --bg-card: #242526; /* Fondo de tarjetas/contenedores ligeramente más claro */
+    --bg-input: #3a3b3c; /* Fondo para inputs */
+    --bg-hover: #3a3b3c; /* Hover para elementos, similar al input */
+    
+    --text-primary: #e4e6eb; /* Texto principal claro (casi blanco) */
+    --text-secondary: #b0b3b8; /* Texto secundario (gris claro) */
+    --text-placeholder: #8a8d91; /* Placeholder (gris medio) */
+    
+    --border-color: #393b3d; /* Bordes (un gris oscuro, más sutil) */
+    --divider-color: #3e4042; /* Divisores (similar al borde) */
+
+    --header-height: 56px;
+    --border-radius: 8px;
+    --box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Sombra más oscura y sutil */
+
+    --font-family-sans-serif: "Segoe UI Historic", "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* --- General Resets & Body --- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    /* Consider adding data-bs-theme="dark" if you want Bootstrap's native dark mode to apply more broadly,
+       though our custom variables will override most things. */
+    /* color-scheme: dark; */ /* Informs browser about dark theme preference */
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-family-sans-serif);
+    font-size: 0.9375rem;
+    font-weight: 400;
+    line-height: 1.34;
+    color: var(--text-primary);
+    background-color: var(--bg-main);
+    padding-top: var(--header-height);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.page-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+a {
+    color: var(--bs-primary);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--text-primary); /* Asegurar que los encabezados también usen el color de texto primario */
+}
+
+/* Espacio por defecto a la derecha del icono */
+
+.nav-item .material-icons {
+    font-size: 1.3em;
+}
+
+
+/* Iconos de nav un poco más grandes */
+
+.action-btn .material-icons {
+    font-size: 1.2em;
+}
+
+
+/* --- Header (Ajustes para iconos y texto en nav-items) --- */
+
+.main-header {
+    background-color: var(--bg-card);
+    height: var(--header-height);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--box-shadow);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1030;
+    padding: 0 1rem;
+}
+
+.header-content-wrapper {
+    max-width: 1140px;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.logo .logo-icon {
+    color: var(--color-primary);
+    margin-right: 0.5rem;
+    font-size: 2rem;
+}
+
+.logo:hover {
+    text-decoration: none;
+    opacity: 0.9;
+}
+
+.main-navigation ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.main-navigation li {
+    margin-left: 0.5rem;
+}
+
+
+/* Reducido un poco el margen */
+
+.nav-item {
+    color: var(--text-secondary);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    display: flex;
+    /* Para alinear icono y texto */
+    align-items: center;
+}
+
+.nav-item:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.nav-item .nav-item-text {
+    display: inline;
+}
+
+
+/* Mostrar texto por defecto */
+
+.nav-profile-pic {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 0.5em;
+    border: 1px solid var(--border-color);
+}
+
+
+/* --- Botones (sin cambios) --- */
+
+.btn {
+    display: inline-block;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--text-primary);
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.9rem;
+    border-radius: var(--border-radius);
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    color: #fff;
+}
+
+.btn-secondary {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-secondary-hover);
+    border-color: var(--color-secondary-hover);
+    color: #fff;
+}
+
+.btn-primary-outline {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-primary-outline:hover {
+    background-color: var(--color-primary);
+    color: #fff;
+}
+
+.btn-secondary-outline {
+    color: var(--color-secondary);
+    border-color: var(--color-secondary);
+}
+
+.btn-secondary-outline:hover {
+    background-color: var(--color-secondary);
+    color: #fff;
+}
+
+.btn-small {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+
+/* --- Mobile Menu Trigger (sin cambios) --- */
+
+.mobile-menu-trigger {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-left: 0.5rem;
+}
+
+.mobile-menu-trigger .material-icons {
+    font-size: 2rem;
+}
+
+
+/* --- Main Content & Cards (sin cambios) --- */
+
+.content-wrapper {
+    flex-grow: 1;
+    padding: 1rem; /* Adjust as needed */
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* --- Home Page Layout --- */
+
+.home-layout {
+    display: flex;
+    gap: 1.5rem;
+    /* Espacio si hubiera una sidebar */
+}
+
+.main-column {
+    flex: 1;
+    /* Ocupa el espacio disponible */
+}
+
+
+/* .sidebar-column { width: 300px; /* Ancho fijo para sidebar, si se usa */
+
+*/
+/* Create Post Section */
+
+.create-post-section .create-post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 0.75rem;
+}
+
+.create-post-section .profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.create-post-section h3 {
+    margin-bottom: 0;
+    font-size: 1.25rem;
+}
+
+.create-post-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 0.75rem;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--text-primary);
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    resize: vertical;
+    margin-bottom: 0.75rem;
+}
+
+.create-post-textarea::placeholder {
+    color: var(--text-placeholder);
+}
+
+.create-post-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#post-media-input {
+    display: none;
+}
+
+
+/* Oculta el input de archivo por defecto */
+
+
+/* Feed Section & Post Items */
+
+.feed-section h2 {
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--divider-color);
+    padding-bottom: 0.5rem;
+}
+
+.post-item {
+    /* card-style ya aplicado */
+    margin-bottom: 1rem;
+}
+.post-item-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem; /* Adjust from Bootstrap card-header padding if needed */
+}
+.post-item .profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.post-item-author strong {
+    font-weight: 600;
+}
+.post-item-author .text-muted {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+}
+.post-item-content {
+    padding-top: 0.5rem; /* Adjust from Bootstrap card-body padding if needed */
+    font-size: 0.9375rem;
+    line-height: 1.34;
+    color: var(--text-primary);
+}
+.post-image {
+    width: 100%;
+    max-height: 500px; /* Or as desired */
+    object-fit: contain; /* Or cover, depending on preference */
+    border-radius: 0; /* Facebook images in posts often don't have rounded corners inside the card */
+    margin-top: 0.75rem;
+    background-color: #000; /* For letterboxing if image is smaller */
+}
+.post-item-actions {
+    display: flex;
+    gap: 0.25rem; /* Smaller gap for action buttons */
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--divider-color);
+    margin-top: 0.75rem;
+}
+.post-item-actions .action-btn {
+    flex-grow: 1;
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: none;
+    padding: 0.5rem 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: var(--border-radius);
+}
+.post-item-actions .action-btn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+.post-item-actions .action-btn.liked {
+    color: var(--bs-primary);
+}
+.post-item-actions .action-btn .material-icons {
+    font-size: 1.25rem; /* Slightly larger icons for actions */
+    margin-right: 0.4em;
+}
+
+/* --- Comments --- */
+.comments-divider {
+    border: 0;
+    height: 1px;
+    background-color: var(--divider-color);
+    margin: 0.75rem 0;
+}
+.comment-form textarea.form-control { /* Specific styling for comment textarea */
+    min-height: 36px;
+    border-radius: 18px; /* Rounded like Facebook's comment input */
+    padding: 8px 12px;
+    background-color: var(--bg-input); /* Dark input background */
+    color: var(--text-primary); /* Light text for input */
+    border-color: var(--border-color); /* Dark border for input */
+}
+.comment-form textarea.form-control::placeholder {
+    color: var(--text-placeholder);
+}
+.comment-form .btn-primary {
+    border-radius: 18px; /* Match textarea */
+}
+.comment-item {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.comment-profile-pic {
+    width: 32px;
+    height: 32px;
+}
+.comment-content {
+    background-color: var(--bg-input); /* Darker bubble for comments */
+    padding: 8px 12px;
+    border-radius: 18px; /* Rounded comment bubble */
+    font-size: 0.875rem;
+}
+.comment-content strong a { /* Ensure comment author link color is correct */
+    color: var(--text-primary) !important;
+}
+.comment-content strong a:hover {
+    color: var(--bs-primary) !important;
+}
+.comment-content .text-muted {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* --- Footer --- */
+.main-footer {
+    background-color: var(--bg-card); /* Dark card background for footer */
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.85em;
+    margin-top: auto;
+}
+/* ... Add other specific styles or overrides as needed ... */
+
+/* Responsive adjustments for Bootstrap components might go here if defaults aren't enough */
+@media (max-width: 768px) {
+    .content-wrapper {
+        padding: 0.5rem;
+    }
+    /* Add other mobile-specific overrides */
+}
+
+/* Ensure Material Icons are vertically aligned */
+.material-icons {
+    vertical-align: middle;
+    line-height: 1;
+    /* margin-right: 0.3em; /* Default, can be overridden */
+}
+
+.nav-item .material-icons, .action-btn .material-icons {
+    margin-right: 0.4em;
+}
+.btn .material-icons { /* For buttons that are icon-only or have text */
+   /* margin-right: 0.2em; /* Adjust if text follows */
+   /* If icon only, no margin needed or handled by button padding */
+}
+button.btn .material-icons:only-child {
+    margin-right: 0; /* No margin if it's the only child */
+}

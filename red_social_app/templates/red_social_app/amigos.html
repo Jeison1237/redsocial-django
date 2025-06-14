@@ -1,0 +1,167 @@
+{% extends "red_social_app/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title|default:"Amigos" }} - MiRedSocial{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">{{ page_title|default:"Gestión de Amigos" }}</h2>
+
+    {# Lista de Amigos #}
+    <section class="friends-section card-style mb-4 p-3">
+        <h4 class="card-title mb-3">Mis Amigos ({{ friends_list|length }})</h4>
+        {% if friends_list %}
+            <ul class="list-group list-group-flush">
+                {% for friend in friends_list %}
+                <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap p-2">
+                    <a href="{% url 'perfil_usuario' friend.usuarioid %}" class="d-flex align-items-center text-decoration-none text-reset mb-2 mb-md-0">
+                        <img src="{% if friend.foto_perfil %}{{ friend.foto_perfil.url }}{% else %}{% static 'red_social_app/images/default_profile.png' %}{% endif %}" 
+                             alt="Perfil de {{ friend.nombre }}" class="profile-pic-small mr-2" 
+                             style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right:10px;">
+                        <span>{{ friend.nombre }} {{ friend.apellido|default_if_none:'' }}</span>
+                    </a>
+                    <form action="{% url 'remove_friend' friend.usuarioid %}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar a {{ friend.nombre }} de tus amigos?');" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">person_remove</span> Eliminar
+                        </button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">Aún no tienes amigos. ¡Conecta con otros usuarios!</p>
+        {% endif %}
+    </section>
+
+    {# Solicitudes de Amistad Recibidas #}
+    <section class="friend-requests-received-section card-style mb-4 p-3">
+        <h4 class="card-title mb-3">Solicitudes de Amistad Recibidas ({{ incoming_requests|length }})</h4>
+        {% if incoming_requests %}
+            <ul class="list-group list-group-flush">
+                {% for req_data in incoming_requests %}
+                 {% if req_data.solicitante %}
+                <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap p-2">
+                    <a href="{% url 'perfil_usuario' req_data.solicitante.usuarioid %}" class="d-flex align-items-center text-decoration-none text-reset mb-2 mb-md-0">
+                        <img src="{% if req_data.solicitante.foto_perfil %}{{ req_data.solicitante.foto_perfil.url }}{% else %}{% static 'red_social_app/images/default_profile.png' %}{% endif %}" 
+                             alt="Perfil de {{ req_data.solicitante.nombre }}" class="profile-pic-small mr-2" 
+                             style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right:10px;">
+                        <span>{{ req_data.solicitante.nombre }} {{ req_data.solicitante.apellido|default_if_none:'' }}</span>
+                    </a>
+                    <div class="mt-2 mt-md-0">
+                        <form action="{% url 'manage_friend_request' req_data.amistad_obj.amistadid 'accept' %}" method="POST" style="display: inline; margin-right: 5px;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">check</span> Aceptar
+                            </button>
+                        </form>
+                        <form action="{% url 'manage_friend_request' req_data.amistad_obj.amistadid 'reject' %}" method="POST" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning btn-sm">
+                                <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">close</span> Rechazar
+                            </button>
+                        </form>
+                    </div>
+                </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">No tienes solicitudes de amistad pendientes.</p>
+        {% endif %}
+    </section>
+
+    {# Solicitudes de Amistad Enviadas #}
+    <section class="friend-requests-sent-section card-style mb-4 p-3">
+        <h4 class="card-title mb-3">Solicitudes de Amistad Enviadas ({{ outgoing_requests|length }})</h4>
+        {% if outgoing_requests %}
+            <ul class="list-group list-group-flush">
+                {% for req_data in outgoing_requests %}
+                 {% if req_data.destinatario %}
+                <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap p-2">
+                     <a href="{% url 'perfil_usuario' req_data.destinatario.usuarioid %}" class="d-flex align-items-center text-decoration-none text-reset mb-2 mb-md-0">
+                        <img src="{% if req_data.destinatario.foto_perfil %}{{ req_data.destinatario.foto_perfil.url }}{% else %}{% static 'red_social_app/images/default_profile.png' %}{% endif %}" 
+                             alt="Perfil de {{ req_data.destinatario.nombre }}" class="profile-pic-small mr-2" 
+                             style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right:10px;">
+                        <span>{{ req_data.destinatario.nombre }} {{ req_data.destinatario.apellido|default_if_none:'' }}</span>
+                    </a>
+                    <span class="text-muted mt-2 mt-md-0">
+                        <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">hourglass_top</span> Pendiente
+                    </span>
+                    {# Aquí podrías añadir un botón para "Cancelar Solicitud Enviada" si implementas esa vista #}
+                </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">No has enviado solicitudes de amistad recientemente o todas han sido respondidas.</p>
+        {% endif %}
+    </section>
+    
+    {# Opcional: Sección para buscar usuarios #}
+    <section class="find-friends-section card-style p-3 mb-4">
+        <h4 class="card-title mb-3">Buscar Usuarios</h4>
+        <form method="GET" action="{% url 'amigos' %}">
+            <div class="input-group">
+                <input type="text" name="q_user_search" class="form-control form-control-sm" placeholder="Buscar por nombre o apellido..." value="{{ search_query|default:'' }}">
+                <button class="btn btn-primary btn-sm" type="submit">
+                    <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">search</span> Buscar
+                </button>
+            </div>
+        </form>
+
+        {% if search_query %}
+            {% if search_results_users_with_status %}
+            <h5 class="mt-3">Resultados de la Búsqueda ({{ search_results_users_with_status|length }}):</h5>
+            <ul class="list-group list-group-flush mt-2">
+                {% for result in search_results_users_with_status %}
+                <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap p-2">
+                    <a href="{% url 'perfil_usuario' result.user.usuarioid %}" class="d-flex align-items-center text-decoration-none text-reset mb-2 mb-md-0">
+                        <img src="{% if result.user.foto_perfil %}{{ result.user.foto_perfil.url }}{% else %}{% static 'red_social_app/images/default_profile.png' %}{% endif %}" 
+                             alt="Perfil de {{ result.user.nombre }}" class="profile-pic-small mr-2" 
+                             style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right:10px;">
+                        <span>{{ result.user.nombre }} {{ result.user.apellido|default_if_none:'' }}</span>
+                    </a>
+                    <div class="mt-2 mt-md-0">
+                        {% if result.status == 'amigos' %}
+                            <a href="{% url 'perfil_usuario' result.user.usuarioid %}" class="btn btn-info btn-sm me-1">Ver Perfil</a>
+                            <form action="{% url 'remove_friend' result.user.usuarioid %}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar a {{ result.user.nombre }} de tus amigos?');" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger-outline btn-sm">
+                                    <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">person_remove</span> Eliminar Amigo
+                                </button>
+                            </form>
+                        {% elif result.status == 'solicitud_enviada' %}
+                            <button class="btn btn-secondary btn-sm" disabled>Solicitud Enviada</button>
+                        {% elif result.status == 'solicitud_recibida' and result.amistad_obj %}
+                            <form action="{% url 'manage_friend_request' result.amistad_obj.amistadid 'accept' %}" method="POST" style="display: inline; margin-right: 5px;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">check</span> Aceptar
+                                </button>
+                            </form>
+                            <form action="{% url 'manage_friend_request' result.amistad_obj.amistadid 'reject' %}" method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-warning btn-sm">
+                                    <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">close</span> Rechazar
+                                </button>
+                            </form>
+                        {% elif result.status == 'puede_enviar_solicitud' %}
+                            <form action="{% url 'send_friend_request' result.user.usuarioid %}" method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                     <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">person_add</span> Enviar Solicitud
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted mt-3">No se encontraron usuarios para "{{ search_query }}".</p>
+            {% endif %}
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

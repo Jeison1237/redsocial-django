@@ -1,0 +1,236 @@
+{% extends "red_social_app/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title|default:"Chat" }} - FaceLook{% endblock %}
+
+{% block extra_head %}
+<style>
+    .chat-page-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - var(--header-height) - 2rem); /* Ajusta 2rem si tienes más padding/margin en main */
+        max-width: 800px; /* O el ancho que prefieras */
+        margin: 1rem auto; /* Centrado y con margen superior */
+    }
+    .chat-header {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border-color);
+        background-color: var(--bg-card); 
+        display: flex;
+        align-items: center;
+        border-top-left-radius: var(--border-radius);
+        border-top-right-radius: var(--border-radius);
+    }
+    .chat-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 0.75rem;
+    }
+    .chat-header h5 {
+        margin-bottom: 0;
+        font-size: 1.1rem;
+    }
+    .chat-messages-wrapper { /* Nuevo wrapper para el card-style */
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--bg-card); /* Aplicar card-style aquí */
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        overflow: hidden; /* Para que el border-radius afecte a los hijos */
+    }
+    .chat-messages {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        background-color: var(--bg-main); 
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem; /* Espacio entre burbujas de mensaje */
+    }
+    .message-bubble {
+        max-width: 75%;
+        padding: 0.6rem 0.9rem;
+        border-radius: 1.2rem; /* Burbujas más redondeadas */
+        word-wrap: break-word;
+        font-size: 0.9rem;
+        line-height: 1.45;
+        position: relative; /* Para la hora y los ticks */
+    }
+    .message-bubble.sent {
+        background-color: var(--bs-primary); /* CAMBIADO de --color-primary a --bs-primary */
+        color: white;
+        align-self: flex-end;
+        border-bottom-right-radius: 0.3rem; 
+    }
+    .message-bubble.received {
+        background-color: var(--bg-input); 
+        color: var(--text-primary);
+        align-self: flex-start;
+        border-bottom-left-radius: 0.3rem;
+    }
+    .message-content p {
+        margin-bottom: 0.2rem; /* Pequeño espacio antes de la meta info */
+    }
+    .message-meta {
+        font-size: 0.7em;
+        text-align: right; /* Alinear hora a la derecha dentro de la burbuja */
+        margin-top: 0.1rem;
+        opacity: 0.8;
+    }
+    .message-bubble.sent .message-meta {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    .message-bubble.received .message-meta {
+        color: var(--text-secondary);
+    }
+    .message-meta .material-icons {
+        font-size: 1.1em; /* Tamaño de los ticks */
+        vertical-align: middle;
+        margin-left: 0.2em;
+    }
+    .chat-input-area {
+        padding: 0.75rem 1rem;
+        border-top: 1px solid var(--border-color);
+        background-color: var(--bg-card);
+        border-bottom-left-radius: var(--border-radius);
+        border-bottom-right-radius: var(--border-radius);
+    }
+    .chat-input-area form {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-end; /* Alinear el botón con el textarea si crece */
+    }
+    .chat-input-area textarea {
+        flex-grow: 1;
+        background-color: var(--bg-input);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 0.5rem 0.75rem;
+        font-size: 0.95rem;
+        resize: none; 
+        min-height: 40px; /* Altura inicial */
+        max-height: 120px; 
+        overflow-y: auto; 
+        line-height: 1.5;
+    }
+    .chat-input-area textarea::placeholder {
+        color: var(--text-placeholder);
+    }
+    .chat-input-area .btn {
+        height: 40px; 
+        flex-shrink: 0; /* Evitar que el botón se encoja */
+    }
+    .chat-input-area .btn .material-icons {
+        margin-right: 0; /* Quitar margen si solo es el icono */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-page-container">
+    <div class="chat-messages-wrapper card-style p-0"> {# Aplicamos card-style al wrapper #}
+        <div class="chat-header">
+            <a href="{% url 'perfil_usuario' receptor_chat.usuarioid %}" class="d-flex align-items-center text-decoration-none text-reset">
+                <img src="{% if receptor_chat.foto_perfil %}{{ receptor_chat.foto_perfil.url }}{% else %}{% static 'red_social_app/images/default_profile.png' %}{% endif %}" 
+                     alt="Perfil de {{ receptor_chat.nombre }}">
+                <h5 class="mb-0">{{ receptor_chat.nombre }} {{ receptor_chat.apellido|default_if_none:'' }}</h5>
+            </a>
+            {# Aquí podrías añadir estado "En línea" o "Última vez activo" si lo implementas #}
+        </div>
+
+        <div class="chat-messages" id="chat-messages-list">
+            {% if mensajes %}
+                {% for mensaje in mensajes %}
+                <div class="message-bubble {% if mensaje.emisor.usuarioid == usuario_actual.usuarioid %}sent{% else %}received{% endif %}">
+                    <div class="message-content">
+                        <p>{{ mensaje.contenido_mensaje|linebreaksbr }}</p>
+                    </div>
+                    <div class="message-meta">
+                        {{ mensaje.fecha_envio|date:"H:i" }}
+                        {% if mensaje.emisor.usuarioid == usuario_actual.usuarioid %}
+                            {% if mensaje.fecha_lectura %}
+                                <span class="material-icons" title="Leído {{ mensaje.fecha_lectura|date:"d M, H:i" }}">done_all</span>
+                            {% else %}
+                                <span class="material-icons" title="Enviado">done</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-center text-muted m-auto">No hay mensajes en esta conversación. ¡Envía el primero!</p>
+            {% endif %}
+        </div>
+
+        <div class="chat-input-area">
+            <form method="POST" action="{% url 'enviar_mensaje' receptor_chat.usuarioid %}">
+                {% csrf_token %}
+                {{ form.contenido_mensaje }} {# Asumiendo que tu MensajeForm se llama 'form' en el contexto y tiene 'contenido_mensaje' #}
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons" style="vertical-align: middle; line-height: 1;">send</span>
+                </button>
+            </form>
+            {% if form.contenido_mensaje.errors %}
+                {% for error in form.contenido_mensaje.errors %}
+                <small class="text-danger d-block mt-1">{{ error }}</small>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatMessagesList = document.getElementById('chat-messages-list');
+    if (chatMessagesList) {
+        // Scroll hasta el final de los mensajes al cargar la página
+        function scrollToBottom() {
+            chatMessagesList.scrollTop = chatMessagesList.scrollHeight;
+        }
+        scrollToBottom();
+
+        // Opcional: Ajustar altura del textarea dinámicamente
+        const textarea = document.querySelector('.chat-input-area textarea');
+        if (textarea) {
+            const initialHeight = textarea.offsetHeight; // Altura base
+            const maxHeight = 120; // Coincide con max-height en CSS
+
+            function autoResizeTextarea() {
+                textarea.style.height = 'auto'; // Reset height to shrink if text is deleted
+                let newHeight = textarea.scrollHeight;
+                if (newHeight > maxHeight) {
+                    newHeight = maxHeight;
+                    textarea.style.overflowY = 'auto'; // Show scrollbar if max height reached
+                } else {
+                    textarea.style.overflowY = 'hidden'; // Hide scrollbar if not needed
+                }
+                textarea.style.height = newHeight + 'px';
+            }
+
+            textarea.addEventListener('input', autoResizeTextarea);
+            autoResizeTextarea(); // Ajustar al cargar por si hay texto (ej. error de form y se re-popula)
+
+            // Enviar con Enter, nueva línea con Shift+Enter
+            textarea.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    const form = textarea.closest('form');
+                    if (form) {
+                        form.submit();
+                    }
+                }
+            });
+        }
+
+        // Si se usa AJAX para enviar mensajes en el futuro, se llamaría scrollToBottom()
+        // después de añadir un nuevo mensaje a chatMessagesList.
+    }
+});
+</script>
+{% endblock %}

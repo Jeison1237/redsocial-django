@@ -1,0 +1,102 @@
+{% extends "red_social_app/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title|default:"Mis Mensajes" }} - FaceLook{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">{{ page_title|default:"Mis Mensajes" }}</h2>
+
+    {# Formulario de Búsqueda para Iniciar Nuevas Conversaciones #}
+    <section class="search-new-chat-section card-style mb-4 p-3">
+        <h4 class="card-title mb-3">Iniciar una Nueva Conversación</h4>
+        <form method="GET" action="{% url 'lista_conversaciones' %}">
+            <div class="input-group">
+                <input type="text" name="q_user_search" class="form-control form-control-sm" placeholder="Buscar usuario por nombre, apellido o correo..." value="{{ search_query|default:'' }}">
+                <button class="btn btn-primary btn-sm" type="submit">
+                    <span class="material-icons" style="font-size: 1.1em; vertical-align: text-bottom;">search</span> Buscar
+                </button>
+            </div>
+        </form>
+
+        {% if search_query %}
+            {% if search_results_users %}
+            <h5 class="mt-3">Resultados de la Búsqueda ({{ search_results_users|length }}):</h5>
+            <ul class="list-group list-group-flush mt-2">
+                {% for user_result in search_results_users %}
+                <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap p-2">
+                    <div class="d-flex align-items-center text-decoration-none text-reset mb-2 mb-md-0">
+                        <img src="{% if user_result.foto_perfil %}{{ user_result.foto_perfil.url }}{% else %}{% static 'red_social_app/images/default_profile.png' %}{% endif %}" 
+                             alt="Perfil de {{ user_result.nombre }}" class="profile-pic-small rounded-circle me-2" 
+                             style="width: 40px; height: 40px; object-fit: cover; margin-right:10px;">
+                        <span>{{ user_result.nombre }} {{ user_result.apellido|default_if_none:'' }} <small class="text-muted">({{ user_result.correo }})</small></span>
+                    </div>
+                    <a href="{% url 'chat_con_usuario' user_result.usuarioid %}" class="btn btn-success btn-sm">
+                        <span class="material-icons" style="font-size: 1em; vertical-align: text-bottom;">chat</span> Iniciar Chat
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted mt-3">No se encontraron usuarios para "{{ search_query }}" que no estén ya en tus conversaciones activas.</p>
+            {% endif %}
+        {% endif %}
+    </section>
+
+    {# Lista de Conversaciones Activas #}
+    <div class="card-style mt-3"> {# Añadido mt-3 para separar de la búsqueda #}
+        <h4 class="card-title mb-0 p-3 border-bottom">Conversaciones Activas</h4>
+        {% if conversaciones %}
+            <ul class="list-group list-group-flush">
+                {% for conv in conversaciones %}
+                <li class="list-group-item {% if conv.no_leido %}list-group-item-primary-custom{% endif %}">
+                    <a href="{% url 'chat_con_usuario' conv.usuario.usuarioid %}" class="text-decoration-none text-reset">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <img src="{% if conv.usuario.foto_perfil %}{{ conv.usuario.foto_perfil.url }}{% else %}{% static 'red_social_app/images/default_profile.png' %}{% endif %}" 
+                                     alt="Perfil de {{ conv.usuario.nombre }}" class="profile-pic-small rounded-circle me-2" 
+                                     style="width: 45px; height: 45px; object-fit: cover;">
+                                <div>
+                                    <h5 class="mb-1">
+                                        {{ conv.usuario.nombre }} {{ conv.usuario.apellido|default_if_none:'' }}
+                                        {% if conv.no_leido %}
+                                            <span class="badge bg-primary rounded-pill" style="font-size: 0.7em; vertical-align: middle;">Nuevo</span>
+                                        {% endif %}
+                                    </h5>
+                                    <small class="text-muted">
+                                        {% if conv.ultimo_mensaje.emisor.usuarioid == usuario_actual.usuarioid %}
+                                            Tú:
+                                        {% endif %}
+                                        {{ conv.ultimo_mensaje.contenido_mensaje|truncatechars:50 }}
+                                    </small>
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ conv.ultimo_mensaje.fecha_envio|date:"d M Y, H:i" }}</small>
+                        </div>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-center text-muted p-3">No tienes conversaciones activas. ¡Busca un usuario para iniciar una!</p>
+        {% endif %}
+    </div>
+</div>
+
+{# Puedes mover estos estilos a tu style.css principal si lo prefieres #}
+{% block extra_styles %} 
+<style>
+.list-group-item-primary-custom {
+    background-color: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.05); /* Un fondo sutil para no leídos, usa tu variable --color-primary si es diferente */
+    font-weight: 500; 
+}
+.profile-pic-small { /* Asegúrate que esta clase no colisione o ajusta según tu CSS existente */
+    margin-right: 10px;
+}
+.search-new-chat-section .btn .material-icons {
+    margin-right: 0.3em; /* Espacio entre icono y texto en botón */
+}
+</style>
+{% endblock %}
+
+{% endblock %}

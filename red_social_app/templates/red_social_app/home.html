@@ -1,0 +1,199 @@
+{% extends "red_social_app/base.html" %} 
+{% load static %} 
+{% block title %}Inicio - FaceLook{% endblock %} 
+{% block content %}
+<div class="home-layout">
+
+     <div class="main-column">
+        {# Sección para crear publicación - adaptada para usar usuario_actual de tu contexto #}
+        {% if usuario_actual %}
+        <section class="create-post-section card-style">
+            <div class="create-post-header">
+                <img src="{% if usuario_actual.foto_perfil %}{{ usuario_actual.foto_perfil.url }}{% else %}{% static 'red_social_app/images/default_profile.png' %}{% endif %}" alt="Tu perfil" class="profile-pic">
+                <h3>Crear Publicación</h3>
+            </div>
+            {# El action debería apuntar a tu vista 'crear_publicacion_view' #}
+            <form method="POST" action="{% url 'crear_publicacion' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <textarea name="contenido_texto" class="create-post-textarea" placeholder="¿Qué estás pensando, {{ usuario_actual.nombre }}?"></textarea>
+                <div class="create-post-options">
+                    <div>
+                        <label for="post-media-input" class="btn btn-secondary-outline btn-small">
+                            <span class="material-icons">add_photo_alternate</span> Adjuntar Foto/Video
+                        </label>
+                        <input type="file" name="url_media" id="post-media-input" style="display:none;">
+                        <small id="home-file-chosen" style="margin-left: 10px; color: var(--text-secondary);"></small> {# NUEVO: Para mostrar el nombre del archivo #}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Publicar</button>
+                </div>
+            </form>
+        </section>
+        {% endif %}
+
+        {# Sección del Feed de Actividad #}
+
+       <section class="feed-section">
+            <h2>Feed de Actividad</h2>
+
+            {% if publicaciones %}
+                {% for publicacion in publicaciones %}
+                <article class="post-item card-style" id="post-{{ publicacion.publicacionid }}">
+                    <div class="post-item-header">
+                        <img src="{% if publicacion.usuario.foto_perfil %}{{ publicacion.usuario.foto_perfil.url }}{% else %}{% static 'red_social_app/images/default_profile.png' %}{% endif %}" alt="Perfil de {{ publicacion.usuario.nombre }}" class="profile-pic">
+                        <div class="post-item-author">
+                            <strong>{{ publicacion.usuario.nombre }} {{ publicacion.usuario.apellido|default_if_none:'' }}</strong>
+                            <small class="text-muted">{{ publicacion.fecha_publicacion|date:"d M Y, H:i" }}</small>
+                        </div>
+                        {% if usuario_actual and publicacion.usuario.usuarioid == usuario_actual.usuarioid %}
+                            <div class="post-options" style="margin-left: auto;">
+                                <form action="{% url 'eliminar_publicacion' publicacion.publicacionid %}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta publicación?');" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-small" title="Eliminar Publicación">
+                                        <span class="material-icons" style="font-size: 1.1em; margin-right: 0.2em;">delete</span> Eliminar
+                                    </form>
+                                <!-- Aquí podrías añadir un botón de editar en el futuro -->
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="post-item-content">
+                        {% if publicacion.contenido_texto %}
+                            <p>{{ publicacion.contenido_texto|linebreaksbr }}</p>
+                        {% endif %}
+                        {% if publicacion.url_media %}
+                            {% with media_full_url=publicacion.get_media_url %} {# Usar la nueva propiedad #}
+                                {% if media_full_url %}
+                                    {# Comparar con los valores en minúscula del ENUM #}
+                                    {% if publicacion.tipo_contenido == 'imagen' %}
+                                        <a href="{{ media_full_url }}" target="_blank" rel="noopener noreferrer">
+                                            <img src="{{ media_full_url }}" alt="Media de la publicación {{ publicacion.publicacionid }}" class="post-image">
+                                        </a>
+                                    {% elif publicacion.tipo_contenido == 'video' %}
+                                        <video controls class="post-video" style="max-width: 100%; height: auto;">
+                                            <source src="{{ media_full_url }}" type="video/{% if publicacion.url_media|lower|slice:"-3:" == "ogg" %}ogg{% elif publicacion.url_media|lower|slice:"-4:" == "webm" %}webm{% else %}mp4{% endif %}">
+                                            Tu navegador no soporta la etiqueta de video.
+                                        </video>
+                                    {% else %}
+                                        {# Para otros tipos de archivo, o si tipo_contenido no es 'imagen'/'video' pero hay url_media #}
+                                        <p><a href="{{ media_full_url }}" target="_blank" rel="noopener noreferrer">Ver archivo adjunto: {{ publicacion.url_media|cut:"publicaciones/" }}</a></p>
+                                    {% endif %}
+                                {% else %}
+                                    <p class="text-muted"><small>Media no disponible.</small></p>
+                                {% endif %}
+                            {% endwith %}
+                        {% endif %}
+                    </div>
+                    <div class="post-item-actions">
+                        {% if usuario_actual %}
+                        <form action="{% url 'alternar_megusta' publicacion.publicacionid %}" method="POST" style="display: inline;" class="like-form">
+                            {% csrf_token %}
+                            {% if publicacion.user_has_liked %}
+                                <button type="submit" class="action-btn liked" title="Quitar Me gusta">
+                                    <span class="material-icons">thumb_up</span> Ya no me gusta ({{ publicacion.total_megusta }})
+                                </button>
+                            {% else %}
+                                <button type="submit" class="action-btn" title="Dar Me gusta">
+                                    <span class="material-icons">thumb_up_off_alt</span> Me Gusta ({{ publicacion.total_megusta }})
+                                </button>
+                            {% endif %}
+                        </form>
+                        {% else %}
+                            <a href="{% url 'login_usuario' %}?next={{ request.get_full_path|urlencode }}" class="action-btn" title="Inicia sesión para dar Me gusta">
+                                <span class="material-icons">thumb_up_off_alt</span> Me Gusta ({{ publicacion.total_megusta }})
+                            </a>
+                        {% endif %}
+                        
+                        {# Contador de comentarios - ya no es un enlace directo a una vista placeholder #}
+                        <span class="action-btn comment-count-display">
+                            <span class="material-icons">chat_bubble_outline</span> {{ publicacion.total_comentarios }} Comentario{{ publicacion.total_comentarios|pluralize }}
+                        </span>
+                        <button class="action-btn" onclick="alert('Funcionalidad Compartir no implementada')"><span class="material-icons">share</span> Compartir</button>
+                    </div>
+
+                    {# Sección de Comentarios #}
+                    <div class="post-item-comments-section">
+                        <hr class="comments-divider">
+                        <h5>Comentarios ({{ publicacion.total_comentarios }})</h5>
+                        
+                        <!-- Formulario para añadir comentario -->
+                        {% if usuario_actual %}
+                        <form method="POST" action="{% url 'anadir_comentario' publicacion.publicacionid %}" class="comment-form mb-3">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                {{ comentario_form.contenido_comentario }}
+                                <button type="submit" class="btn btn-primary btn-sm">Comentar</button>
+                            </div>
+                            {% if comentario_form.contenido_comentario.errors %}
+                                {% for error in comentario_form.contenido_comentario.errors %}
+                                <small class="text-danger d-block">{{ error }}</small>
+                                {% endfor %}
+                            {% endif %}
+                        </form>
+                        {% else %}
+                        <p class="text-muted"><small><a href="{% url 'login_usuario' %}?next={{ request.get_full_path|urlencode }}#post-{{ publicacion.publicacionid }}">Inicia sesión</a> para comentar.</small></p>
+                        {% endif %}
+                    
+                        <!-- Lista de comentarios -->
+                        <div class="comments-list">
+                            {% for comentario in publicacion.comentarios_set.all %}
+                                <div class="comment-item">
+                                    <img src="{% if comentario.usuario.foto_perfil %}{{ comentario.usuario.foto_perfil.url }}{% else %}{% static 'red_social_app/images/default_profile.png' %}{% endif %}" alt="Perfil de {{ comentario.usuario.nombre }}" class="profile-pic comment-profile-pic">
+                                    <div class="comment-content">
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                            <div>
+                                                <strong>{{ comentario.usuario.nombre }} {{ comentario.usuario.apellido|default_if_none:'' }}</strong>
+                                                <small class="text-muted">{{ comentario.fecha_comentario|date:"d M Y, H:i" }}</small>
+                                            </div>
+                                            {% if usuario_actual and comentario.usuario.usuarioid == usuario_actual.usuarioid %}
+                                            <form action="{% url 'eliminar_comentario' publicacion.publicacionid comentario.comentarioid %}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este comentario?');" style="display: inline; margin-left: 10px;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger btn-very-small" title="Eliminar Comentario">
+                                                    <span class="material-icons" style="font-size: 0.9em;">delete_outline</span>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                        <p>{{ comentario.contenido_comentario|linebreaksbr }}</p>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                {% if usuario_actual %}
+                                <p class="no-comments text-muted"><small>Sé el primero en comentar.</small></p>
+                                {% else %}
+                                <p class="no-comments text-muted"><small>Aún no hay comentarios.</small></p>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            {% else %}
+                <div class="card-style text-center p-4">
+                    <p>No hay publicaciones para mostrar todavía.</p>
+                    {% if usuario_actual %}
+                        <p>¡Sé el primero en <a href="{% url 'crear_publicacion' %}">crear una</a>!</p>
+                    {% else %}
+                        <p><a href="{% url 'login_usuario' %}">Inicia sesión</a> para crear publicaciones.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% if not usuario_actual %} {# Cambiado de user.is_authenticated a usuario_actual #}
+            <div class="guest-prompt card-style">
+                <p>Inicia sesión o regístrate para ver más actividad y participar en la conversación.</p>
+                <div class="guest-actions">
+                    <a href="{% url 'login_usuario' %}" class="btn btn-primary">Iniciar Sesión</a>
+                    <a href="{% url 'registro_usuario' %}" class="btn btn-secondary-outline">Registrarse</a>
+                </div>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+
+    {# Columna lateral (sidebar) si la necesitas en el futuro #}
+    <!--
+    <aside class="sidebar-column">
+        ...
+    </aside>
+    -->
+</div>
+{% endblock %}

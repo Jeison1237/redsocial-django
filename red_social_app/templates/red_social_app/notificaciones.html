@@ -1,0 +1,47 @@
+// filepath: c:\Users\julia\Desktop\Poli\Whatsapp2\redsocial-django\red_social_main\red_social_app\templates\red_social_app\notificaciones.html
+{% extends "red_social_app/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title|default:"Notificaciones" }} - FaceLook{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card card-style">
+        <div class="card-header">
+            <h2 class="mb-0">{{ page_title|default:"Notificaciones" }}</h2>
+        </div>
+        <div class="card-body">
+            {% if notificaciones_todas %}
+                <ul class="list-group list-group-flush">
+                    {% for notif in notificaciones_todas %}
+                    <li class="list-group-item {% if not notif.leida %}list-group-item-info{% else %}bg-transparent{% endif %} d-flex justify-content-between align-items-center flex-wrap">
+                        <div>
+                            <p class="mb-1">{{ notif.mensaje_notificacion }}</p>
+                            <small class="text-muted">{{ notif.fecha_creacion|date:"d M Y, H:i" }}</small>
+                            {% if notif.tipo_notificacion in "megusta comentario" and notif.elemento_relacionado_id %}
+                                - <small><a href="{% url 'home_redsocial' %}#post-{{ notif.elemento_relacionado_id }}" class="text-decoration-none">Ir a la publicación</a></small>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if not notif.leida %}
+                                <a href="{% url 'leer_notificacion' notif.notificacionid %}" class="btn btn-sm btn-outline-primary mt-1 mt-md-0">Marcar como leída</a>
+                            {% else %}
+                                <span class="badge bg-secondary">Leída</span>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted text-center">No tienes notificaciones.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .list-group-item-info {
+        background-color: rgba(var(--bs-info-rgb), 0.15) !important; /* Un color de fondo sutil para no leídas */
+    }
+</style>
+{% endblock %}

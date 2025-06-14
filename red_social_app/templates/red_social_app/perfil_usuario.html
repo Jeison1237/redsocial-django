@@ -1,0 +1,194 @@
+{% extends "red_social_app/base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - FaceLook{% endblock %}
+
+{% block content %}
+<div class="profile-page-container card-style">
+    <header class="profile-header">
+        <div class="profile-banner">
+            {# <img src="{% if perfil_usuario.foto_banner %}{{ perfil_usuario.foto_banner.url }}{% else %}{% static 'red_social_app/images/default_banner.jpg' %}{% endif %}" alt="Banner de {{ perfil_usuario.nombre }}" class="profile-banner-img"> #}
+        </div>
+        <div class="profile-info">
+            <div class="profile-pic-container">
+                <img src="{% if perfil_usuario.foto_perfil %}{{ perfil_usuario.foto_perfil.url }}{% else %}{% static 'red_social_app/images/default_profile.png' %}{% endif %}" alt="Perfil de {{ perfil_usuario.nombre }}" class="profile-pic-large">
+            </div>
+            <div class="profile-details">
+                <h1>{{ perfil_usuario.nombre }} {{ perfil_usuario.apellido|default_if_none:'' }}</h1>
+                {# <p class="profile-username">@{{ perfil_usuario.nombre_usuario }}</p> #}
+                {# <p class="profile-bio">{{ perfil_usuario.biografia|default_if_none:"Sin biografía." }}</p> #}
+                <p class="profile-location text-muted"><span class="material-icons">location_on</span> {{ perfil_usuario.ubicacion|default_if_none:"Ubicación no especificada" }}</p>
+                <p class="profile-joined text-muted"><span class="material-icons">calendar_today</span> Se unió el {{ perfil_usuario.fecha_registro|date:"d M Y" }}</p>
+            </div>
+            <div class="profile-actions">
+                {% if usuario_actual %}
+                    {% if usuario_actual.usuarioid == perfil_usuario.usuarioid %}
+                        <a href="#" class="btn btn-secondary-outline">Editar Perfil</a> {# Próximamente: url 'editar_perfil' #}
+                    {% else %}
+                        {% if estado_amistad_con_perfil == 'amigos' %}
+                            <form action="{% url 'remove_friend' perfil_usuario.usuarioid %}" method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger-outline">Eliminar Amigo</button>
+                            </form>
+                        {% elif estado_amistad_con_perfil == 'solicitud_enviada' %}
+                            <button class="btn btn-secondary" disabled>Solicitud Enviada</button>
+                            {# Opcional: Botón para cancelar solicitud #}
+                        {% elif estado_amistad_con_perfil == 'solicitud_recibida' and amistad_obj_para_gestion %}
+                             <form action="{% url 'manage_friend_request' amistad_obj_para_gestion.amistadid 'accept' %}" method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Aceptar Solicitud</button>
+                            </form>
+                            <form action="{% url 'manage_friend_request' amistad_obj_para_gestion.amistadid 'reject' %}" method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary-outline">Rechazar Solicitud</button>
+                            </form>
+                        {% elif puede_enviar_solicitud %}
+                            <form action="{% url 'send_friend_request' perfil_usuario.usuarioid %}" method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Enviar Solicitud de Amistad</button>
+                            </form>
+                        {% endif %}
+                        {# <a href="#" class="btn btn-secondary-outline">Enviar Mensaje</a> #}
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'login_usuario' %}?next={{ request.path }}" class="btn btn-primary">Iniciar sesión para interactuar</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <section class="profile-content">
+        {# Aquí puedes añadir pestañas para publicaciones, amigos, información, etc. #}
+        <h2>Publicaciones de {{ perfil_usuario.nombre }}</h2>
+        <hr>
+        <div class="feed-section profile-feed">
+            {% if publicaciones_perfil %}
+                {% for publicacion_item in publicaciones_perfil %} {# Cambiado el nombre de la variable del bucle para evitar conflicto #}
+                    {# Incluir la plantilla parcial para cada publicación #}
+                    {% include "red_social_app/partials/post_item_card.html" with publicacion=publicacion_item comentario_form=comentario_form usuario_actual=usuario_actual %}
+                {% endfor %}
+            {% else %}
+                <div class="card-style text-center p-4">
+                    <p>{{ perfil_usuario.nombre }} aún no tiene publicaciones.</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<style>
+/* Estilos específicos para la página de perfil (puedes moverlos a tu CSS principal) */
+.profile-page-container {
+    max-width: 900px;
+    margin: 1.5rem auto;
+}
+.profile-header {
+    /* background-color: var(--bg-card-darker);  Puedes definir una variable para esto */
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+}
+.profile-banner {
+    height: 200px; /* Ajusta según necesites */
+    background-color: var(--color-secondary); /* Color de fondo si no hay imagen */
+    overflow: hidden;
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+}
+.profile-banner-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.profile-info {
+    display: flex;
+    align-items: flex-end;
+    padding: 1rem 1.5rem;
+    position: relative;
+    margin-top: -60px; /* Para que la foto de perfil se superponga al banner */
+}
+.profile-pic-container {
+    margin-right: 1.5rem;
+    flex-shrink: 0;
+}
+.profile-pic-large {
+    width: 120px; /* Más grande que en el feed */
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--bg-card); /* Borde para destacar sobre el banner */
+    background-color: var(--bg-card); /* Fondo si la imagen es transparente o tarda en cargar */
+}
+.profile-details {
+    flex-grow: 1;
+}
+.profile-details h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+}
+.profile-username {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+.profile-bio {
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+.profile-location,
+.profile-joined {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+.profile-location .material-icons,
+.profile-joined .material-icons {
+    font-size: 1.1em;
+    margin-right: 0.4em;
+}
+.profile-actions {
+    margin-left: auto; /* Empuja los botones a la derecha */
+    flex-shrink: 0;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.profile-content {
+    padding: 0 1.5rem 1.5rem;
+}
+.profile-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+
+@media (max-width: 768px) {
+    .profile-info {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: -50px;
+    }
+    .profile-pic-container {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+    .profile-pic-large {
+        width: 100px;
+        height: 100px;
+    }
+    .profile-details h1 {
+        font-size: 1.5rem;
+    }
+    .profile-actions {
+        margin-left: 0;
+        margin-top: 1rem;
+        width: 100%;
+        justify-content: center;
+    }
+    .profile-actions .btn {
+        flex-grow: 1; /* Para que los botones ocupen el ancho */
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,1 @@
+web: gunicorn red_social_main.wsgi --log-file -
