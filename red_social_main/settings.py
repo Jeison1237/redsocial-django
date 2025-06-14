@@ -27,7 +27,12 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-qf@ymt3n*33y25
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
-ALLOWED_HOSTS = ['https://redsocial-4373c7dc6740.herokuapp.com/', '127.0.0.1', 'localhost'] # Replace 'your-app-name'
+ALLOWED_HOSTS = [
+    'https://redsocial-4373c7dc6740.herokuapp.com/',
+    '127.0.0.1',
+    'localhost',
+    'redsocial-4373c7dc6740.herokuapp.com', # Added Heroku app domain
+]
 
 
 # Application definition
@@ -147,4 +152,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-CSRF_TRUSTED_ORIGINS = ['https://your-app-name.herokuapp.com'] # Replace 'your-app-name'
+CSRF_TRUSTED_ORIGINS = ['https://redsocial-4373c7dc6740.herokuapp.com'] # Replace 'your-app-name'
