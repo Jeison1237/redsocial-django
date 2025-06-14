@@ -110,7 +110,7 @@
                                 <small class="text-muted">{{ comentario.fecha_comentario|date:"d M Y, H:i" }}</small>
                             </div>
                             {% if usuario_actual and comentario.usuario.usuarioid == usuario_actual.usuarioid %}
-                            <form action="{% url 'eliminar_comentario' comentario.comentarioid %}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este comentario?');" style="display: inline; margin-left: 10px;">
+                            <form action="{% url 'eliminar_comentario' publicacion.publicacionid comentario.comentarioid %}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este comentario?');" style="display: inline; margin-left: 10px;">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-danger btn-very-small" title="Eliminar Comentario">
                                     <span class="material-icons" style="font-size: 0.9em;">delete_outline</span>
